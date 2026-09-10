@@ -1991,6 +1991,28 @@ function buildOutput(){
   H('OWNER INTERVIEW'); ['concern','diff','vision','invest','space','comp_aware','comp_names','exit','decision','notes'].forEach(f=>kv(f,'s10',f)); L.push('Misc photos'+ph('s10','misc'));
   H('INSTRUCTION'); L.push(`Generate the Practice Performance Brief for ${lbl('s0','prac')}. Lead with compliance failures. Connect every financial finding to its physical, operational, or market root cause using the measured data above. Show the formula and the source of every dollar figure. Where data is NOT AVAILABLE, say so and treat it as a finding. Tag benchmarks REG or IND. Reference photos by filename. Tone: senior advisor from a clinic development, design and build firm — direct, specific, no filler. End with a sequenced action plan.`);
   L.push(''); L.push('When market data is provided in a follow-up, produce the Location and Market Analysis: competition density and saturation, demographic fit, population growth and development pipeline, lease security, and a recommendation on renovate / expand / add a branch / reposition, plus a marketing strategy built on the strengths identified above.');
+  // Safety net — every note and every photo, guaranteed to appear even if a specific section above missed it.
+  const namedNotes = new Set(); const namedPhotoKeys = new Set();
+  H('ADDITIONAL NOTES CAPTURED ON ITEMS');
+  let anyNotes=false;
+  Object.keys(D).forEach(sec=>{
+    Object.keys(D[sec]||{}).forEach(f=>{
+      if(f.endsWith('__note') && D[sec][f] && String(D[sec][f]).trim()){
+        L.push(`[${sec} / ${f.replace('__note','')}] ${D[sec][f]}`); anyNotes=true;
+      }
+    });
+  });
+  if(!anyNotes) L.push('None recorded.');
+  H('ALL PHOTOS CAPTURED THIS SESSION (complete list, cross-check against the sections above)');
+  const bySec={};
+  Object.values(PH).forEach(p=>{ (bySec[p.sec]=bySec[p.sec]||[]).push(p); });
+  if(!Object.keys(bySec).length) L.push('None captured.');
+  Object.keys(bySec).sort().forEach(sec=>{
+    const items={}; bySec[sec].forEach(p=>{ (items[p.item]=items[p.item]||[]).push(p); });
+    Object.keys(items).forEach(item=>{
+      L.push(`${sec} / ${item}: ${items[item].length} photo(s) — ${SESSION.code}_${sec}_${item}_*.jpg`);
+    });
+  });
   return L.join('\n');
 }
 
